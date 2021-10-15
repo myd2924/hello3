@@ -12,7 +12,6 @@ import lombok.*;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @ToString
 public class TStudent {
 }

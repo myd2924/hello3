@@ -5,10 +5,12 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -37,30 +39,40 @@ public class DataSourceConfig {
         protected static final transient String PREFIX = "oms";
 
         @Bean(name = PREFIX + "DataSourceProperties")
+        @Primary
         @ConfigurationProperties(PREFIX + ".spring.datasource")
+        @ConditionalOnMissingBean(name = PREFIX + "DataSourceProperties")
         public DataSourceProperties dataSourceProperties(){
             return new DataSourceProperties();
         }
 
         @Bean(name = PREFIX + "DataSource")
+        @Primary
+        @ConditionalOnMissingBean(name = PREFIX + "DataSource")
         @ConfigurationProperties(PREFIX + ".spring.datasource")
         public DataSource initDataSource(){
             return dataSourceProperties().initializeDataSourceBuilder().build();
         }
 
         @Bean(name = PREFIX  + "TransactionManage")
+        @Primary
+        @ConditionalOnMissingBean(name = PREFIX  + "TransactionManage")
         public PlatformTransactionManager dataSourceTransactionManage(@Qualifier(PREFIX + "DataSource") DataSource dataSource){
             return new DataSourceTransactionManager(dataSource);
         }
 
         @Bean(name = PREFIX + "SqlSessionFactory")
+        @Primary
+        @ConditionalOnMissingBean(name = PREFIX + "SqlSessionFactory")
         public SqlSessionFactory sqlSessionFactory(@Qualifier(PREFIX + "DataSource") DataSource dataSource) throws Exception {
             final MybatisSqlSessionFactoryBean sqlSessionFactoryBean = new MybatisSqlSessionFactoryBean();
             sqlSessionFactoryBean.setDataSource(dataSource);
             return sqlSessionFactoryBean.getObject();
         }
 
-        @Bean(name = PREFIX + "DataSource")
+        @Bean(name = PREFIX + "SqlSessionTemplate")
+        @Primary
+        @ConditionalOnMissingBean(name = PREFIX + "SqlSessionTemplate")
         public SqlSessionTemplate sqlSessionTemplate(@Qualifier(PREFIX + "DataSource") DataSource dataSource) throws Exception {
             return new SqlSessionTemplate(sqlSessionFactory(dataSource));
 
